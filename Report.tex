@@ -1,0 +1,765 @@
+\documentclass[a4paper, openany]{book}
+
+% Packages
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage[utf8]{vietnam}
+\usepackage{booktabs}
+\usepackage{float} 
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% Geometry setup
+\geometry{left=2cm,right=2cm,top=2cm,bottom=2cm}
+
+% Titlepage information
+\newcommand{\reporttitle}{Phân tích và Mô hình hóa\\Dữ liệu Giá nhà tại Boston}
+\newcommand{\reportauthors}{%
+    Thực hiện: Lương Quý Huy \\
+    Mã sinh viên: 21000683
+}
+\newcommand{\courseinfo}{Mã học phần: MAT3508\\ Học kỳ 1, Năm học 2025-2026}
+\newcommand{\universitylogo}{HUS.png} % Đặt file logo vào cùng thư mục
+
+\newcommand{\doi}[1]{\href{https://doi.org/#1}{\texttt{#1}}} % DOI link command
+
+\begin{document}
+
+% Trang bìa
+\begin{titlepage}
+    \centering
+    \vspace*{-1cm}
+    {\LARGE\MakeUppercase{Đại học Quốc gia Hà Nội}\par}
+    {\LARGE\MakeUppercase{Trường Đại học Khoa học Tự nhiên}\par}
+    \vfill
+    \includegraphics[width=0.3\textwidth]{\universitylogo}\par\vfill
+    {\Huge \bfseries \reporttitle \par}
+    \vspace{1cm}
+    {\Large \reportauthors \par}
+    \vspace{1cm}
+    {\large \courseinfo \par}
+    \vfill
+\end{titlepage}
+
+% Trang thông tin dự án
+\clearpage
+\thispagestyle{empty}
+\begin{center}
+    {\LARGE \textbf{Thông tin Dự án}}\\[1.5em]
+    \parbox{0.85\textwidth}{
+    }
+    \\[2em]
+    \begin{tabular}{rl}
+        \textbf{Học phần:} & MAT3508 -- Nhập môn Trí tuệ Nhân tạo \\
+        \textbf{Học kỳ:} & Học kỳ 1, Năm học 2025-2026 \\
+        \textbf{Trường:} & VNU-HUS (Đại học Quốc gia Hà Nội -- Trường Đại học Khoa học Tự nhiên) \\
+        \textbf{Tên dự án} & Phân tích và mô hình hóa dữ liệu giá nhà tại Boston \\
+        \textbf{Ngày nộp:} & {29/11/2025} \\
+        \textbf{Báo cáo PDF:} & \href{https://github.com/Gaxjvool/VNU-HUS-IntroAI-MiniProject/report.pdf}{báo cáo PDF trong kho GitHub} \\
+        \textbf{Slide thuyết trình:} & \href{https://github.com/Gaxjvool/VNU-HUS-IntroAI-MiniProject/Phan-tich-va-Mo-hinh-hoa-Du-lieu-Gia-nha-tai-Boston.pptx}{slide thuyết trình trong kho GitHub} \\
+        \textbf{Kho GitHub:} & \href{https://github.com/Gaxjvool/VNU-HUS-IntroAI-MiniProject}{VNU-HUS-IntroAI-MiniProject}
+    \end{tabular}
+    \\[2em]
+    {\Large \textbf{Thành viên nhóm}}\\[1em]
+    \begin{tabular}{|l|l|l|l|}
+        \hline
+        \textbf{Họ tên} & \textbf{Mã sinh viên} & \textbf{Tên GitHub} & \textbf{Đóng góp} \\
+        \hline
+        Lương Quý Huy & 21000683 & \href{https://github.com/Gaxjvool}{Gaxjvool} &  Toàn bộ \\ 
+        \hline
+    \end{tabular}
+\end{center}
+\clearpage
+
+\listoffigures % Remove if not needed
+
+\listoftables % Remove if not needed
+
+\tableofcontents
+\clearpage
+
+% Chương 1: Giới thiệu
+\chapter{Giới thiệu}
+
+\section{Tóm tắt}
+
+Dự án ''Phân tích và mô hình hóa dữ liệu giá nhà tại Boston'' nhằm xây dựng một quy trình phân tích dữ liệu hoàn chỉnh từ khám phá dữ liệu (EDA), tiền xử lý, giảm chiều (PCA) đến xây dựng và so sánh các mô hình học máy để dự đoán giá nhà trung bình (MEDV) trong bộ dữ liệu Boston Housing. Mục tiêu chính của nhóm là tìm hiểu các yếu tố ảnh hưởng đến giá nhà, giảm chiều dữ liệu để trực quan hóa và tăng tính hiệu quả mô hình, đồng thời so sánh hiệu năng giữa các phương pháp hồi quy, phân loại và phân cụm tiêu biểu.
+
+Nhóm đã thực hiện chuẩn hóa dữ liệu, phân tích tương quan, áp dụng PCA (với cả 2 và nhiều thành phần chính) để khảo sát cấu trúc dữ liệu, rồi triển khai các mô hình gồm Hồi quy tuyến tính, SVM, KNN, cùng các phương pháp phân cụm (K-Means, Agglomerative). Kết quả nổi bật cho thấy mô hình hồi quy tuyến tính đạt $R^2\approx0.60$ trên tập kiểm tra, trong khi khi rời rạc hóa MEDV để phân loại, SVM đạt ~85.29\% và KNN đạt ~82.35\%. Những kết quả này cho thấy phương pháp tiếp cận của nhóm có khả năng giải thích và dự đoán tương đối tốt, đồng thời còn nhiều không gian để cải thiện qua tinh chỉnh siêu tham số và xử lý dữ liệu.
+
+\section{Bài toán đặt ra}
+Bài toán dự đoán giá nhà tại Boston là một trong những ví dụ kinh điển trong học máy, được sử dụng rộng rãi để đánh giá khả năng của các mô hình hồi quy và các kỹ thuật giảm chiều dữ liệu. Mục tiêu chính là xây dựng mô hình có thể dự đoán giá trị trung bình của những căn nhà (MEDV) dựa trên 13 đặc trưng kinh tế -- xã hội và hạ tầng, chẳng hạn như tỷ lệ tội phạm, mật độ công nghiệp, mức độ ô nhiễm không khí, tỷ lệ học sinh -- giáo viên, hay khoảng cách đến trung tâm việc làm.  
+
+Bài toán này có ý nghĩa thực tiễn quan trọng trong việc hỗ trợ quy hoạch đô thị, phân tích thị trường bất động sản, cũng như giúp các nhà đầu tư và cơ quan quản lý hiểu rõ hơn về các yếu tố ảnh hưởng đến giá nhà. Từ góc độ học máy, đây là một bộ dữ liệu tiêu chuẩn để kiểm thử và so sánh hiệu năng giữa các thuật toán khác nhau, bao gồm cả hồi quy, phân loại, và phân cụm.  
+
+Tuy nhiên, bài toán cũng đặt ra nhiều thách thức. Dữ liệu có thể tồn tại tương quan cao giữa các đặc trưng (đa cộng tuyến), gây ảnh hưởng đến độ chính xác của mô hình hồi quy. Ngoài ra, sự phân bố không đồng đều của biến mục tiêu, nhiễu trong dữ liệu và giới hạn về số lượng mẫu (506 quan sát) khiến việc huấn luyện và đánh giá mô hình đòi hỏi phải lựa chọn phương pháp tiền xử lý và điều chỉnh siêu tham số phù hợp để đạt hiệu suất tối ưu và khả năng khái quát hóa cao.
+
+
+% Chương 2: Phương pháp & Triển khai
+\chapter{Phương pháp \& Triển khai}
+
+\section{Phương pháp}
+\subsection{Cách tiếp cận tổng thể}
+Dự án được thiết kế nhằm mô phỏng một quy trình học máy hoàn chỉnh, bao gồm các giai đoạn: thu thập và khám phá dữ liệu, tiền xử lý, giảm chiều dữ liệu, xây dựng mô hình, đánh giá kết quả và trực quan hóa. Quy trình này được triển khai trong ngôn ngữ Python, sử dụng các thư viện tiêu chuẩn trong khoa học dữ liệu như \texttt{pandas}, \texttt{NumPy}, \texttt{scikit-learn}, \texttt{matplotlib}, và \texttt{seaborn}.
+
+\noindent Các bước chính trong phương pháp luận bao gồm:
+\begin{enumerate}
+    \item \textbf{Thu thập dữ liệu:} Sử dụng bộ dữ liệu Boston Housing từ nguồn mở, chứa 506 mẫu và 13 đặc trưng đầu vào cùng một biến mục tiêu \texttt{MEDV} (giá trị trung bình của nhà, tính bằng nghìn USD).
+    \item \textbf{Khám phá và tiền xử lý dữ liệu (EDA \& Preprocessing):} Phân tích thống kê mô tả, kiểm tra giá trị thiếu, chuẩn hóa dữ liệu, và đánh giá mối tương quan giữa các đặc trưng. 
+    \item \textbf{Giảm chiều dữ liệu (PCA):} Áp dụng phương pháp phân tích thành phần chính để giảm số lượng đặc trưng, giúp loại bỏ đa cộng tuyến và trực quan hóa dữ liệu.
+    \begin{itemize}
+        \item \textbf{Hồi quy tuyến tính (Linear Regression):} Dự đoán giá trị liên tục \texttt{MEDV}.
+        \item \textbf{Phân loại nhóm giá:} Rời rạc hóa biến \texttt{MEDV} thành các nhóm giá, sau đó áp dụng hai thuật toán phân loại: \textbf{K-Nearest Neighbors (KNN)} và \textbf{Support Vector Machine (SVM)}.
+        \item \textbf{Phân cụm (K-Means):} Phân cụm các mẫu dựa trên đặc trưng đã được chuẩn hóa và/hoặc giảm chiều bằng PCA.
+    \end{itemize}
+    \item \textbf{Đánh giá mô hình:}
+    \begin{itemize}
+        \item \textbf{Hồi quy:} Đánh giá bằng hệ số xác định $R^2$ và sai số bình phương trung bình gốc (RMSE).
+        \item \textbf{Phân loại:} Sử dụng các chỉ số \textit{Accuracy} và \textit{F1-score}.
+        \item \textbf{Phân cụm:} Đánh giá độ tách biệt và đồng nhất của cụm bằng \textit{Silhouette Score}.
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Thu thập và mô tả dữ liệu}
+\label{subsec:data_description_revised}
+
+\paragraph{Nguồn dữ liệu}  
+Dữ liệu sử dụng trong dự án là bộ dữ liệu \textbf{Boston Housing} — một bộ dữ liệu kinh điển cho bài toán dự đoán giá nhà. Dữ liệu có thể lấy từ các nguồn công khai như UCI hoặc Kaggle (ví dụ: \texttt{https://www.cs.toronto.edu/delve/data/boston/bostonDetail.html}). Bộ dữ liệu gồm \textbf{506 mẫu} với \textbf{13 đặc trưng} đầu vào và một biến mục tiêu \texttt{MEDV} (giá trị trung bình của nhà, đơn vị: \$1000).
+
+\paragraph{Thông tin các trường (features)}  
+Các biến trong tập dữ liệu bao gồm:
+\begin{itemize}
+  \item \texttt{CRIM} : tỷ lệ tội phạm bình quân đầu người theo thị trấn.
+  \item \texttt{ZN} : tỉ lệ đất ở được quy hoạch cho các lô có diện tích trên 25.000 m\(^2\).
+  \item \texttt{INDUS} : tỉ lệ diện tích đất kinh doanh phi bán lẻ theo thị trấn.
+  \item \texttt{CHAS} : biến chỉ vùng giáp sông Charles (1 nếu giáp sông; 0 nếu không).
+  \item \texttt{NOX} : nồng độ oxit nitric (phần trên 10 triệu).
+  \item \texttt{RM} : số phòng trung bình trên mỗi căn nhà.
+  \item \texttt{AGE} : tỉ lệ các đơn vị sở hữu được xây trước năm 1940.
+  \item \texttt{DIS} : khoảng cách có trọng số tới 5 trung tâm việc làm ở Boston.
+  \item \texttt{RAD} : chỉ số khả năng tiếp cận đường cao tốc hướng tâm.
+  \item \texttt{TAX} : thuế suất tài sản trên mỗi \$10.000.
+  \item \texttt{PTRATIO} : tỉ lệ học sinh -- giáo viên theo thị trấn.
+  \item \texttt{B} : \(1000(B_k - 0.63)^2\), trong đó \(B_k\) là tỉ lệ người da đen theo thị trấn.
+  \item \texttt{LSTAT} : phần trăm dân số có địa vị thấp hơn.
+  \item \texttt{MEDV} : \textbf{(Target)} giá trị trung bình của các ngôi nhà do chủ sở hữu sử dụng (tính bằng \$1000).
+\end{itemize}
+
+\paragraph{Kiểm tra dữ liệu (Data checks)}  
+Trước khi tiền xử lý và xây dựng mô hình, tiến hành các bước kiểm tra sau:
+\begin{itemize}
+  \item \textbf{Kiểu dữ liệu:} Kiểm tra bằng \texttt{df.info()} hoặc \texttt{df.dtypes}. Trong thực nghiệm của nhóm, tất cả các cột đều có dạng số thực (ví dụ \texttt{float64}), do đó không cần chuyển đổi kiểu dữ liệu.
+  \item \textbf{Giá trị khuyết thiếu:} Kiểm tra bằng \texttt{df.isnull().sum()}
+  \item \textbf{Thống kê mô tả:} Dùng \texttt{df.describe()} để tóm tắt mean, std, min, max, quartiles cho từng biến.
+  \item \textbf{Phân phối biến:} Vẽ biểu đồ phân phối (histogram / KDE) cho từng cột để đánh giá phân bố. Biến \texttt{MEDV} thường có độ lệch (skew) nhất định — cân nhắc phép biến đổi log khi cần đối với mô hình hồi quy.
+  \item \textbf{Ngoại lệ (outliers):} Vẽ boxplot để phát hiện outlier ở các biến như \texttt{CRIM}, \texttt{TAX}, \texttt{LSTAT}; ghi nhận và cân nhắc xử lý nếu cần.
+  \item \textbf{Ma trận tương quan:} Vẽ heatmap ma trận tương quan giữa các đặc trưng và với \texttt{MEDV} để xác định những biến có mối liên hệ mạnh (giá trị gần \(\pm1\)) hoặc yếu (gần 0).
+  \item \textbf{Đa cộng tuyến (Multicollinearity):} Tính \textbf{Variance Inflation Factor (VIF)} cho từng biến để phát hiện đa cộng tuyến. Nếu VIF của biến vượt ngưỡng (ví dụ > 5 hoặc > 10), xem xét loại bỏ biến hoặc áp dụng giảm chiều (PCA).
+\end{itemize}
+
+
+\paragraph{Tiền xử lý dữ liệu (Data Preprocessing)}  
+Dựa trên các kiểm tra trên, đề xuất các bước tiền xử lý sau trước khi đưa dữ liệu vào mô hình:
+\begin{enumerate}
+  \item \textbf{Tách features / target:} \(X =\) \texttt{df.drop('MEDV', axis=1)}, \(y =\) \texttt{df['MEDV']}.
+  \item \textbf{Chuẩn hóa (scaling):} Sử dụng chuẩn hóa z-score để đưa mỗi đặc trưng về trung bình 0 và độ lệch chuẩn 1 — điều này đặc biệt quan trọng cho các mô hình dựa trên khoảng cách (KNN, K-Means) và SVM.  
+  \\
+  \textit{Định nghĩa hàm \texttt{rescale(X)} (z-score):} \\
+  Gọi \( \mu = \mathrm{mean}(X) \) và \( \sigma = \mathrm{std}(X) \). Giá trị chuẩn hóa của một phần tử \(x\) là
+  \[
+    z = \frac{x - \mu}{\sigma}.
+  \]
+  Hàm \texttt{rescale(X)} thực hiện với mỗi cột của \texttt{X}: tính \(\mu\), \(\sigma\) rồi trả về Series/Vector đã chuẩn hóa. (Trong thực tế có thể dùng \texttt{sklearn.preprocessing.StandardScaler} để thay thế.)
+  \item \textbf{Giữ biến nhị phân:} \texttt{CHAS} giữ nguyên ở dạng 0/1 (không cần one-hot nếu chỉ có một biến dạng này).
+  \item \textbf{Rời rạc hóa MEDV cho phân loại:} Khi chuyển bài toán sang phân loại nhóm giá, sử dụng \texttt{pd.cut} để chia \texttt{MEDV} thành 3--5 nhóm tuỳ mục tiêu phân tích; nếu cần giữ cân bằng lớp, có thể dùng bin theo quantile.
+  \item \textbf{Chia tập huấn luyện / kiểm tra:} Sử dụng \texttt{train\_test\_split(X, y, test\_size=0.2, random\_state=42)}. Với bài toán phân loại nhóm giá, nên sử dụng tham số \texttt{stratify} để bảo toàn tỉ lệ lớp.
+\end{enumerate}
+
+\section{Triển khai}
+\label{subsec:implementation}
+
+Mục này trình bày chi tiết các bước thực thi dự án bằng Python, sử dụng các thư viện khoa học dữ liệu phổ biến. Luồng triển khai được chia thành bốn giai đoạn chính: (1) Tiền xử lý và Phân tích Dữ liệu Khám phá (EDA) để làm sạch và hiểu rõ dữ liệu; (2) Xây dựng mô hình Hồi quy để dự đoán giá nhà; (3) Áp dụng thuật toán Phân cụm để khám phá các nhóm tiềm ẩn; và (4) Xây dựng các mô hình Phân loại để dự đoán các nhóm giá đã được rời rạc hóa.
+
+\subsubsection{Tiền xử lý và Phân tích Dữ liệu Khám phá (EDA)}
+
+Giai đoạn đầu tiên tập trung vào việc chuẩn bị một bộ dữ liệu sạch và đáng tin cậy, đồng thời trích xuất các thông tin chi tiết ban đầu thông qua trực quan hóa.
+
+\paragraph{Làm sạch dữ liệu}
+Đầu tiên, dữ liệu được tải từ tệp \texttt{HousingData.csv}. Một bước kiểm tra ban đầu cho thấy không có sự tồn tại của các giá trị thiếu (\texttt{NaN}). Ta chuyển sang bước tiếp theo.
+
+\paragraph{Trực quan hóa phân phối dữ liệu}
+Để hiểu rõ hơn về đặc điểm của từng biến, ta vẽ biểu đồ phân phối (\texttt{histogram} kết hợp với ước tính mật độ kernel - \texttt{KDE}) cho tất cả 14 đặc trưng. Việc này giúp xác định các biến có phân phối lệch (\emph{skewed}) như \texttt{CRIM}, \texttt{ZN} và các biến có phân phối gần chuẩn như \texttt{RM}.
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[width=\textwidth]{figures/distribution_plot.png}
+    \caption{Phân phối của các đặc trưng trong bộ dữ liệu Boston Housing.}
+    \label{fig:distributions}
+\end{figure}
+\clearpage 
+\textit{Phân tích: Hình \ref{fig:distributions} cho thấy nhiều đặc trưng không tuân theo phân phối chuẩn. Cụ thể:
+\begin{itemize}
+    \item Các biến \texttt{CRIM} (tỷ lệ tội phạm) và \texttt{ZN} (tỷ lệ đất ở) bị lệch phải rất mạnh, cho thấy hầu hết các khu vực có giá trị thấp ở hai đặc trưng này.
+    \item Biến \texttt{CHAS} là một biến nhị phân, thể hiện sự mất cân bằng lớn khi hầu hết các ngôi nhà không nằm gần sông Charles.
+    \item Biến \texttt{RM} (số phòng) có phân phối gần đối xứng nhất, tiệm cận phân phối chuẩn, tập trung quanh giá trị 6.
+    \item Đáng chú ý, biến mục tiêu \texttt{MEDV} (giá nhà) có một sự tích tụ bất thường ở giá trị 50.0. Điều này là dấu hiệu của việc dữ liệu bị giới hạn trên (censored data), tức là tất cả các ngôi nhà có giá trị thực cao hơn 50,000\$ đều được ghi nhận là 50.
+\end{itemize}
+}
+
+\paragraph{Phân tích tương quan}
+Một ma trận tương quan được xây dựng và trực quan hóa bằng biểu đồ nhiệt (\texttt{heatmap}) để kiểm tra mối quan hệ tuyến tính giữa các biến. Phân tích này rất quan trọng để xác định các đặc trưng có ảnh hưởng mạnh nhất đến biến mục tiêu \texttt{MEDV} và phát hiện hiện tượng đa cộng tuyến.
+
+\begin{figure}[htbp]
+    \centering
+    % Lưu ý: Đảm bảo file correlation_heatmap.png nằm trong thư mục con 'figures'
+    % hoặc thay đổi đường dẫn cho phù hợp.
+    \includegraphics[width=0.9\textwidth]{figures/correlation_heatmap.png}
+    \caption{Ma trận tương quan của các đặc trưng.}
+    \label{fig:heatmap}
+\end{figure}
+
+\textit{Phân tích: Biểu đồ nhiệt tại Hình \ref{fig:heatmap} cung cấp nhiều thông tin giá trị:
+\begin{itemize}
+    \item \textbf{Tương quan với biến mục tiêu (\texttt{MEDV}):} \texttt{RM} (số phòng) có tương quan dương mạnh nhất (+0.70), trong khi \texttt{LSTAT} (tỷ lệ dân số có địa vị thấp) có tương quan âm mạnh nhất (-0.74). Điều này hoàn toàn phù hợp với trực giác: nhà nhiều phòng hơn thì đắt hơn, và khu vực có tỷ lệ dân cư thu nhập thấp cao hơn thì giá nhà rẻ hơn.
+    \item \textbf{Đa cộng tuyến (Multicollinearity):} Hiện tượng các biến độc lập có tương quan mạnh với nhau được thể hiện rõ. Cặp biến \texttt{RAD} (chỉ số tiếp cận đường cao tốc) và \texttt{TAX} (thuế suất) có tương quan cực kỳ cao (+0.91). Tương tự, \texttt{DIS} (khoảng cách đến trung tâm) và \texttt{AGE} (tuổi của ngôi nhà) cũng có tương quan âm mạnh (-0.75). Phát hiện này là cơ sở quan trọng để quyết định sử dụng các kỹ thuật giảm chiều như PCA trong các bước mô hình hóa sau này.
+\end{itemize}
+}
+
+\subsubsection{Mô hình hóa Hồi quy - Dự đoán giá nhà}
+
+Mục tiêu của giai đoạn này là xây dựng một mô hình dự báo giá trị liên tục của biến \texttt{MEDV} dựa trên các đặc trưng đầu vào. Để đảm bảo tính khách quan và hiệu quả, nhóm triển khai một pipeline bao gồm các bước: phân chia dữ liệu, chuẩn hóa, giảm chiều và cuối cùng là huấn luyện mô hình Hồi quy Tuyến tính. Các bước này được thực hiện tuần tự và mỗi bước đều có cơ sở toán học rõ ràng.
+
+\paragraph{Phân chia dữ liệu (Train-Test Split)}
+Bước đầu tiên và quan trọng nhất là phân chia bộ dữ liệu $\mathcal{D} = \{(\mathbf{x}_i, y_i)\}_{i=1}^N$ (với $N=506$) thành hai tập con không giao nhau: tập huấn luyện ($\mathcal{D}_{\text{train}}$) và tập kiểm tra ($\mathcal{D}_{\text{test}}$). Quá trình này được thực hiện theo tỷ lệ 80\% cho huấn luyện và 20\% cho kiểm tra.
+\begin{itemize}
+    \item $\mathcal{D}_{\text{train}}$ được sử dụng để "dạy" cho mô hình, bao gồm việc tính toán các tham số cho quá trình chuẩn hóa, các thành phần chính của PCA, và các hệ số của mô hình hồi quy.
+    \item $\mathcal{D}_{\text{test}}$ được giữ riêng hoàn toàn và chỉ được sử dụng một lần duy nhất ở cuối quy trình để đánh giá hiệu năng tổng quát hóa của mô hình trên dữ liệu mới mà nó chưa từng thấy.
+\end{itemize}
+Việc phân chia dữ liệu ngay từ đầu là một nguyên tắc cốt lõi để ngăn chặn hiện tượng \textbf{rò rỉ dữ liệu (data leakage)}, đảm bảo rằng việc đánh giá mô hình là hoàn toàn khách quan.
+
+\paragraph{Chuẩn hóa dữ liệu (Standardization)}
+Các đặc trưng trong bộ dữ liệu Boston Housing có thang đo và phương sai rất khác nhau. Các thuật toán dựa trên khoảng cách hoặc tối ưu hóa bằng gradient descent, bao gồm cả PCA và Hồi quy Tuyến tính (đặc biệt khi có regularize), rất nhạy cảm với sự khác biệt này. Do đó, ta áp dụng phương pháp chuẩn hóa Z-score (Standardization).
+
+Với mỗi đặc trưng (cột) $j$ trong tập huấn luyện $\mathbf{X}_{\text{train}}$, ta tính giá trị trung bình $\mu_j$ và độ lệch chuẩn $\sigma_j$:
+\[
+    \mu_j = \frac{1}{N_{\text{train}}} \sum_{i=1}^{N_{\text{train}}} x_{i,j} \quad \text{và} \quad \sigma_j = \sqrt{\frac{1}{N_{\text{train}}} \sum_{i=1}^{N_{\text{train}}} (x_{i,j} - \mu_j)^2}
+\]
+Sau đó, mỗi giá trị $x_{i,j}$ trong cả tập huấn luyện và tập kiểm tra được biến đổi thành giá trị chuẩn hóa $x'_{i,j}$:
+\[
+    x'_{i,j} = \frac{x_{i,j} - \mu_j}{\sigma_j}
+\]
+Điều quan trọng là các giá trị $\mu_j$ và $\sigma_j$ được tính \textbf{chỉ từ tập huấn luyện} và sau đó được áp dụng cho cả hai tập. Điều này mô phỏng kịch bản thực tế khi các tham số tiền xử lý phải được xác định trước khi có dữ liệu mới.
+
+\paragraph{Giảm chiều dữ liệu (Principal Component Analysis - PCA)}
+Như đã phân tích ở phần EDA, bộ dữ liệu tồn tại hiện tượng đa cộng tuyến. PCA được sử dụng để giải quyết vấn đề này bằng cách biến đổi các đặc trưng tương quan ban đầu thành một tập hợp các đặc trưng mới, không tương quan tuyến tính, được gọi là các thành phần chính (Principal Components).
+
+Về mặt toán học, PCA thực hiện các bước sau trên dữ liệu huấn luyện đã chuẩn hóa $\mathbf{X}'_{\text{train}}$:
+\begin{enumerate}
+    \item \textbf{Tính ma trận hiệp phương sai:} $\mathbf{S} = \frac{1}{N_{\text{train}}-1} (\mathbf{X}'_{\text{train}})^T \mathbf{X}'_{\text{train}}$. Ma trận này mô tả phương sai và tương quan giữa các đặc trưng.
+    \item \textbf{Thực hiện phân tích riêng (Eigendecomposition):} Giải bài toán giá trị riêng cho ma trận $\mathbf{S}$: $\mathbf{S}\mathbf{v}_j = \lambda_j\mathbf{v}_j$. Kết quả là một tập hợp các giá trị riêng (eigenvalues) $\lambda_1 \ge \lambda_2 \ge \dots \ge \lambda_D$ và các vector riêng (eigenvectors) tương ứng $\mathbf{v}_1, \mathbf{v}_2, \dots, \mathbf{v}_D$. Các vector riêng này chính là các thành phần chính, là các hướng trong không gian dữ liệu mà phương sai của dữ liệu là lớn nhất.
+    \item \textbf{Chọn số thành phần chính:} Thay vì chọn một số lượng $K$ cố định, ta chọn số thành phần chính nhỏ nhất sao cho tổng phương sai được giải thích đạt một ngưỡng nhất định (trong trường hợp này là 95\%). Tức là, chọn $K$ nhỏ nhất thỏa mãn:
+    \[
+        \frac{\sum_{j=1}^K \lambda_j}{\sum_{j=1}^D \lambda_j} \ge 0.95
+    \]
+    \item \textbf{Chiếu dữ liệu:} Xây dựng ma trận chiếu $\mathbf{W} \in \mathbb{R}^{D \times K}$ có các cột là $K$ vector riêng hàng đầu. Dữ liệu mới trong không gian $K$ chiều được tính bằng phép chiếu: $\mathbf{Z}_{\text{train}} = \mathbf{X}'_{\text{train}} \mathbf{W}$.
+\end{enumerate}
+Ma trận chiếu $\mathbf{W}$ tương tự được áp dụng cho tập kiểm tra đã chuẩn hóa: $\mathbf{Z}_{\text{test}} = \mathbf{X}'_{\text{test}} \mathbf{W}$.
+
+\paragraph{Xây dựng mô hình Hồi quy Tuyến tính (Linear Regression)}
+Sau khi đã có bộ dữ liệu huấn luyện $\mathbf{Z}_{\text{train}}$ với các đặc trưng đã được tối ưu, ta xây dựng mô hình Hồi quy Tuyến tính để tìm ra mối quan hệ tuyến tính giữa các thành phần chính và giá nhà. Mô hình có dạng:
+\[
+    h_{\boldsymbol{\theta}}(\mathbf{z}) = \theta_0 + \theta_1 z_1 + \theta_2 z_2 + \dots + \theta_K z_K = \boldsymbol{\theta}^T \tilde{\mathbf{z}}
+\]
+trong đó $\mathbf{z} = [z_1, \dots, z_K]$ là một mẫu dữ liệu sau khi qua PCA, $\tilde{\mathbf{z}}$ là vector $\mathbf{z}$ được thêm thành phần $z_0=1$ cho hệ số chặn (intercept), và $\boldsymbol{\theta} = [\theta_0, \theta_1, \dots, \theta_K]$ là vector các tham số của mô hình cần tìm.
+
+Mục tiêu là tìm ra vector $\boldsymbol{\theta}$ tối ưu sao cho tổng bình phương sai số (Sum of Squared Errors - SSE) trên tập huấn luyện là nhỏ nhất. Hàm mất mát (cost function) có dạng:
+\[
+    J(\boldsymbol{\theta}) = \frac{1}{2} \sum_{i=1}^{N_{\text{train}}} (h_{\boldsymbol{\theta}}(\mathbf{z}_i) - y_i)^2
+\]
+Đối với Hồi quy Tuyến tính, bài toán tối ưu này có một nghiệm giải tích tường minh gọi là \textbf{Phương trình Normal (Normal Equation)}:
+\[
+    \hat{\boldsymbol{\theta}} = (\mathbf{Z}_{\text{train}}^T \mathbf{Z}_{\text{train}})^{-1} \mathbf{Z}_{\text{train}}^T \mathbf{y}_{\text{train}}
+\]
+Sau khi tìm được vector hệ số $\hat{\boldsymbol{\theta}}$ từ tập huấn luyện, mô hình có thể dự đoán giá nhà cho một mẫu mới $\mathbf{z}_{\text{new}}$ bằng công thức: $\hat{y} = \hat{\boldsymbol{\theta}}^T \tilde{\mathbf{z}}_{\text{new}}$. Hiệu suất của mô hình này sẽ được đánh giá trên tập kiểm tra $\mathbf{Z}_{\text{test}}$ và trình bày chi tiết trong Chương 3.
+
+\subsubsection{Mô hình hóa Phân cụm - Khám phá cấu trúc dữ liệu}
+
+Khác với Hồi quy, vốn là một bài toán học có giám sát nhằm dự đoán một giá trị mục tiêu, Phân cụm là một phương pháp \textbf{học không giám sát}. Mục tiêu của nó không phải là dự đoán, mà là khám phá các cấu trúc hoặc nhóm tiềm ẩn (clusters) trong dữ liệu dựa trên sự tương đồng nội tại của các điểm dữ liệu. Trong dự án này, ta sử dụng thuật toán \textbf{K-Means}, một trong những thuật toán phân cụm phổ biến và hiệu quả nhất.
+
+\paragraph{Chuẩn bị dữ liệu cho Phân cụm}
+Vì mục tiêu là tìm ra các nhóm tự nhiên trong toàn bộ tập dữ liệu, ta sẽ thực hiện phân cụm trên \textbf{toàn bộ 506 mẫu} mà không cần phân chia train-test. Tuy nhiên, bước chuẩn hóa dữ liệu lại đóng vai trò cực kỳ quan trọng.
+
+Thuật toán K-Means hoạt động dựa trên việc tối thiểu hóa khoảng cách Euclidean giữa các điểm dữ liệu và tâm cụm của chúng. Khoảng cách Euclidean giữa hai điểm dữ liệu $\mathbf{x}_a$ và $\mathbf{x}_b$ trong không gian $D$ chiều được định nghĩa là:
+\[
+    d(\mathbf{x}_a, \mathbf{x}_b) = \sqrt{\sum_{j=1}^{D} (x_{aj} - x_{bj})^2}
+\]
+Nếu các đặc trưng (features) có thang đo chênh lệch lớn (ví dụ: \texttt{TAX} có giá trị hàng trăm, trong khi \texttt{NOX} có giá trị dưới 1), đặc trưng có thang đo lớn hơn sẽ lấn át và chi phối hoàn toàn việc tính toán khoảng cách. Điều này làm cho các đặc trưng có thang đo nhỏ hơn gần như không có trọng số trong việc hình thành cụm.
+
+Để đảm bảo mỗi đặc trưng đóng góp một cách công bằng vào mô hình, ta áp dụng phép \textbf{chuẩn hóa Z-score} trên toàn bộ dữ liệu, đưa mỗi đặc trưng về trung bình bằng 0 và độ lệch chuẩn bằng 1.
+
+\paragraph{Thuật toán Phân cụm K-Means}
+Mục tiêu của K-Means là phân chia $N$ điểm dữ liệu vào $K$ cụm $C_1, C_2, \dots, C_K$ sao cho tổng bình phương khoảng cách từ mỗi điểm dữ liệu đến tâm (centroid) của cụm mà nó thuộc về là nhỏ nhất. Hàm mục tiêu (objective function) cần tối thiểu hóa, còn được gọi là \textbf{Inertia} hay \textbf{Within-Cluster Sum of Squares (WCSS)}, được cho bởi công thức:
+\[
+    J = \sum_{k=1}^{K} \sum_{\mathbf{x}_i \in C_k} ||\mathbf{x}_i - \boldsymbol{\mu}_k||^2
+\]
+trong đó $\boldsymbol{\mu}_k$ là vector trung bình (centroid) của tất cả các điểm dữ liệu $\mathbf{x}_i$ thuộc cụm $C_k$.
+
+Để tìm ra các cụm tối ưu, K-Means sử dụng một thuật toán lặp (iterative algorithm), thường được gọi là thuật toán của Lloyd, bao gồm các bước sau:
+\begin{enumerate}
+    \item \textbf{Bước Khởi tạo (Initialization):} Chọn ngẫu nhiên $K$ điểm dữ liệu từ tập dữ liệu làm các tâm cụm ban đầu $\boldsymbol{\mu}_1, \boldsymbol{\mu}_2, \dots, \boldsymbol{\mu}_K$. Trong triển khai của \texttt{scikit-learn}, phương pháp khởi tạo thông minh \texttt{k-means++} thường được sử dụng để cải thiện tốc độ hội tụ và chất lượng cụm.
+    \item \textbf{Bước Gán nhãn (Assignment Step):} Với mỗi điểm dữ liệu $\mathbf{x}_i$, gán nó vào cụm có tâm gần nhất. Tức là, $\mathbf{x}_i$ thuộc về cụm $C_k$ nếu:
+    \[
+        k = \arg\min_{j \in \{1, \dots, K\}} ||\mathbf{x}_i - \boldsymbol{\mu}_j||^2
+    \]
+    \item \textbf{Bước Cập nhật (Update Step):} Tính toán lại tâm của mỗi cụm bằng cách lấy trung bình cộng của tất cả các điểm dữ liệu đã được gán vào cụm đó trong bước trước:
+    \[
+        \boldsymbol{\mu}_k \leftarrow \frac{1}{|C_k|} \sum_{\mathbf{x}_i \in C_k} \mathbf{x}_i
+    \]
+    \item \textbf{Hội tụ (Convergence):} Lặp lại Bước Gán nhãn và Bước Cập nhật cho đến khi các tâm cụm không còn thay đổi đáng kể hoặc đạt đến số vòng lặp tối đa.
+\end{enumerate}
+Trong khuôn khổ dự án này, ta chọn số cụm $K=3$ để khám phá các nhóm giá tiềm năng (ví dụ: thấp, trung bình, cao) trong dữ liệu.
+
+\paragraph{Các chỉ số đánh giá chất lượng cụm}
+Do không có nhãn "đúng" trong bài toán phân cụm, ta sử dụng các chỉ số đánh giá nội tại (internal validation metrics) để đo lường chất lượng của các cụm được hình thành. Các chỉ số này đánh giá dựa trên hai tiêu chí: \textbf{độ đồng nhất} (cohesion - các điểm trong cùng một cụm phải gần nhau) và \textbf{độ tách biệt} (separation - các cụm khác nhau phải ở xa nhau).
+\begin{itemize}
+    \item \textbf{Silhouette Score:} Đối với mỗi điểm dữ liệu, chỉ số này đo lường mức độ giống nhau của nó với cụm của chính nó so với cụm gần nhất kế tiếp. Giá trị của Silhouette Score dao động từ -1 đến 1, trong đó giá trị càng gần 1 cho thấy các cụm càng dày đặc và tách biệt rõ ràng.
+    \item \textbf{Davies-Bouldin Index (DBI):} Chỉ số này định nghĩa sự tương đồng giữa hai cụm dựa trên tỷ lệ giữa tổng khoảng cách trong cụm và khoảng cách giữa các tâm cụm. Giá trị DBI càng thấp càng tốt, cho thấy các cụm có độ đồng nhất cao và tách biệt tốt.
+    \item \textbf{Calinski-Harabasz Index (CHI):} Còn được gọi là Tiêu chí Tỷ lệ Phương sai (Variance Ratio Criterion), chỉ số này là tỷ lệ giữa phương sai giữa các cụm và phương sai trong mỗi cụm. Giá trị CHI càng cao thì các cụm càng dày đặc và tách biệt tốt.
+\end{itemize}
+Các chỉ số này sẽ được tính toán sau khi mô hình K-Means hội tụ để đưa ra một đánh giá định lượng về cấu trúc các cụm được phát hiện.
+
+\subsubsection{Mô hình hóa Phân loại - Dự đoán nhóm giá}
+
+Ở giai đoạn cuối cùng, ta chuyển bài toán từ hồi quy sang \textbf{phân loại (classification)}. Thay vì dự đoán giá trị liên tục của \texttt{MEDV}, mục tiêu bây giờ là phân loại mỗi ngôi nhà vào một trong các nhóm giá đã được định nghĩa trước. Cách tiếp cận này có thể hữu ích trong các ứng dụng thực tế nơi việc phân loại (ví dụ: "nhà giá rẻ", "nhà tầm trung", "nhà cao cấp") là đủ và dễ diễn giải hơn một con số dự báo chính xác.
+
+\paragraph{Rời rạc hóa biến mục tiêu}
+Bước đầu tiên là biến đổi biến mục tiêu liên tục \texttt{MEDV} thành một biến phân loại (categorical). ta sử dụng phương pháp chia khoảng (binning) để tạo ra ba nhóm giá riêng biệt:
+\begin{itemize}
+    \item \textbf{Giá thấp:} \texttt{MEDV} $\in [0, 15]$ (nghìn USD)
+    \item \textbf{Giá trung bình:} \texttt{MEDV} $\in (15, 25]$ (nghìn USD)
+    \item \textbf{Giá cao:} \texttt{MEDV} $> 25$ (nghìn USD)
+\end{itemize}
+Việc chọn các ngưỡng này dựa trên phân tích phân phối của \texttt{MEDV}, nhằm tạo ra các nhóm có ý nghĩa thực tế. Sau khi rời rạc hóa, bài toán trở thành dự đoán nhãn (`Giá thấp`, `Giá trung bình`, hoặc `Giá cao`) cho mỗi mẫu dữ liệu.
+
+\paragraph{Chuẩn bị dữ liệu và Pipeline cho Phân loại}
+Tương tự như bài toán hồi quy, dữ liệu được chia thành tập huấn luyện (80\%) và tập kiểm tra (20\%). Một bước quan trọng được bổ sung là sử dụng tham số \texttt{stratify} trong quá trình phân chia. Tham số này đảm bảo rằng tỷ lệ phân bổ của ba nhóm giá trong tập huấn luyện và tập kiểm tra là giống hệt nhau. Điều này cực kỳ cần thiết để tránh trường hợp mô hình được huấn luyện trên một phân phối dữ liệu khác biệt so với khi kiểm tra, giúp kết quả đánh giá trở nên đáng tin cậy hơn.
+
+Một điểm cải tiến quan trọng trong quy trình tiền xử lý của ta là việc xử lý các loại đặc trưng khác nhau một cách riêng biệt. Đặc trưng \texttt{CHAS} là một biến nhị phân (0 hoặc 1), việc áp dụng chuẩn hóa Z-score lên nó không chỉ không cần thiết mà còn có thể làm sai lệch ý nghĩa vốn có của biến. Để giải quyết vấn đề này, ta đã sử dụng công cụ \texttt{ColumnTransformer} của \texttt{scikit-learn} để xây dựng một bộ tiền xử lý chuyên biệt:
+\begin{itemize}
+    \item \textbf{Đối với các đặc trưng liên tục:} Áp dụng \texttt{StandardScaler} để đưa chúng về cùng một thang đo (trung bình 0, độ lệch chuẩn 1).
+    \item \textbf{Đối với đặc trưng nhị phân (\texttt{CHAS}):} Giữ nguyên giá trị gốc mà không biến đổi (sử dụng tùy chọn \texttt{'passthrough'}).
+\end{itemize}
+Bộ tiền xử lý này sau đó được tích hợp làm bước đầu tiên trong \texttt{Pipeline} của các mô hình nhạy cảm với thang đo, đảm bảo mỗi loại dữ liệu được xử lý một cách phù hợp nhất.
+
+\paragraph{Các mô hình phân loại được triển khai}
+ta đã lựa chọn và so sánh hai thuật toán phân loại phổ biến với các đặc điểm khác nhau:
+
+\begin{enumerate}
+     \item \textbf{K-Nearest Neighbors (KNN):}
+KNN là một thuật toán học máy thuộc nhóm "học lười" (lazy learning), nghĩa là quá trình học thực chất chỉ là việc lưu trữ dữ liệu huấn luyện. Quá trình tính toán thực sự chỉ diễn ra khi cần dự đoán cho một điểm dữ liệu mới.
+\begin{itemize}
+    \item \textbf{Quy trình hoạt động từng bước:}
+    \begin{enumerate}
+        \item \textbf{Bước 1: Lưu trữ dữ liệu (Training Phase):} Mô hình tiếp nhận và lưu trữ toàn bộ tập dữ liệu huấn luyện bao gồm các vector đặc trưng $\mathbf{X}_{train}$ và nhãn tương ứng $\mathbf{y}_{train}$. Tại bước này, chưa có tính toán phức tạp nào diễn ra.
+        
+        \item \textbf{Bước 2: Tính toán khoảng cách (Distance Calculation):} Khi có một điểm dữ liệu mới cần dự đoán $\mathbf{x}_{new}$, thuật toán sẽ tính khoảng cách từ $\mathbf{x}_{new}$ đến \textit{tất cả} các điểm $\mathbf{x}_i$ trong tập huấn luyện. Với cấu hình hiện tại ($p=2$), ta sử dụng khoảng cách Euclidean:
+        \[
+            d(\mathbf{x}_{new}, \mathbf{x}_i) = \sqrt{\sum_{j=1}^{D} (x_{new,j} - x_{i,j})^2}
+        \]
+        Trong đó $D$ là số chiều dữ liệu (số lượng đặc trưng).
+        
+        \item \textbf{Bước 3: Tìm láng giềng (Neighbor Selection):} Các khoảng cách vừa tính được sắp xếp theo thứ tự tăng dần. Thuật toán chọn ra $K$ điểm có khoảng cách nhỏ nhất (trong dự án này, $K=5$). Đây chính là tập hợp "hàng xóm gần nhất" $\mathcal{N}_K$.
+        
+        \item \textbf{Bước 4: Bỏ phiếu (Voting):} Để xác định nhãn cho $\mathbf{x}_{new}$, thuật toán thực hiện bỏ phiếu đa số dựa trên nhãn của $K$ hàng xóm:
+        \[
+            \hat{y} = \arg\max_{c \in Classes} \sum_{\mathbf{x}_i \in \mathcal{N}_K} I(y_i = c)
+        \]
+        Trong đó $I(\cdot)$ là hàm chỉ thị (trả về 1 nếu đúng, 0 nếu sai). Nhãn nào xuất hiện nhiều nhất sẽ được gán cho $\mathbf{x}_{new}$.
+    \end{enumerate}
+    
+    \item \textbf{Lưu ý về Tiền xử lý:} Do công thức khoảng cách ở Bước 2 rất nhạy cảm với độ lớn của các biến số, ta bắt buộc phải sử dụng \texttt{Pipeline} chứa \texttt{ColumnTransformer}. Bộ xử lý này chuẩn hóa các biến liên tục về cùng một thang đo (StandardScaler) trong khi giữ nguyên biến nhị phân \texttt{CHAS}, đảm bảo khoảng cách được tính toán công bằng giữa các đặc trưng.
+\end{itemize}
+
+\item \textbf{Support Vector Machine (SVM):}
+SVM là thuật toán tìm kiếm một siêu phẳng quyết định (decision boundary) sao cho khoảng cách (lề - margin) từ siêu phẳng đó đến các điểm dữ liệu gần nhất của mỗi lớp là lớn nhất.
+    \begin{itemize}
+        \item \textbf{Cơ sở toán học:} Trong triển khai, ta chỉ định rõ \texttt{kernel='rbf'}, tức là sử dụng \textbf{Kernel Trick} với hàm nhân \textbf{Radial Basis Function (RBF)}. Hàm RBF cho phép SVM hoạt động hiệu quả trong không gian đặc trưng có số chiều rất cao (thậm chí vô hạn), từ đó tìm ra các ranh giới phân loại phi tuyến tính phức tạp. Hàm nhân RBF giữa hai điểm $\mathbf{x}_i$ và $\mathbf{x}_j$ được định nghĩa là:
+        \[
+            K(\mathbf{x}_i, \mathbf{x}_j) = \exp(-\gamma ||\mathbf{x}_i - \mathbf{x}_j||^2)
+        \]
+        Trong đó, $||\mathbf{x}_i - \mathbf{x}_j||^2$ là bình phương khoảng cách Euclidean và $\gamma$ là một siêu tham số điều khiển mức độ ảnh hưởng của mỗi điểm. Về bản chất, kernel RBF đo lường sự tương đồng giữa các điểm, cho phép SVM tạo ra các ranh giới quyết định linh hoạt.
+        \item \textbf{Triển khai và Tiền xử lý:} Tương tự như KNN, hiệu suất của SVM với kernel RBF phụ thuộc rất nhiều vào thang đo của các đặc trưng do sự hiện diện của khoảng cách Euclidean trong công thức. Do đó, ta cũng tích hợp SVM vào một \texttt{Pipeline} với cùng bộ tiền xử lý \texttt{ColumnTransformer} đã được sử dụng cho KNN, đảm bảo rằng chỉ các đặc trưng liên tục được chuẩn hóa.
+    \end{itemize}   
+\end{enumerate}
+Hiệu suất của cả hai mô hình này sẽ được đánh giá trên tập kiểm tra và so sánh chi tiết trong chương tiếp theo.
+
+% Chương 3: Kết quả & Phân tích
+\chapter{Kết quả \& Phân tích}
+
+\section{Kết quả Mô hình Hồi quy}
+
+\paragraph{Các chỉ số hiệu suất định lượng}
+Để đánh giá mức độ chính xác và khả năng giải thích của mô hình, ta sử dụng hai chỉ số chính là Hệ số xác định ($R^2$) và Sai số bình phương trung bình gốc (RMSE). Kết quả trên tập kiểm tra được tổng hợp trong Bảng \ref{tab:regression_results}.
+
+\begin{table}[h!]
+    \centering
+    \caption{Kết quả đánh giá Mô hình Hồi quy Tuyến tính trên tập kiểm tra.}
+    \label{tab:regression_results}
+    \begin{tabular}{lc}
+        \toprule
+        \textbf{Chỉ số đánh giá} & \textbf{Giá trị} \\
+        \midrule
+        Hệ số xác định ($R^2$) & 0.6086 \\
+        Sai số bình phương trung bình gốc (RMSE) & 5.3572 (nghìn USD) \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\paragraph{Phân tích và Thảo luận kết quả}
+Giá trị $R^2$ đạt 0.6086, có nghĩa là mô hình của ta có thể giải thích được khoảng \textbf{60.9\%} sự biến thiên của giá nhà (\texttt{MEDV}) trên tập dữ liệu kiểm tra. Đây là một kết quả ở mức khá, cho thấy các thành phần chính được giữ lại sau PCA vẫn chứa đựng thông tin dự báo hữu ích, tuy nhiên vẫn còn một phần đáng kể phương sai của giá nhà chưa được mô hình nắm bắt.
+
+Chỉ số RMSE cung cấp một thước đo về độ lớn trung bình của sai số dự đoán. Với giá trị là 5.3572, mô hình có sai số dự đoán trung bình là khoảng \textbf{\$5,357} so với giá nhà thực tế. Con số này giúp định lượng mức độ chênh lệch của các dự đoán trong bối cảnh thực tế.
+
+Để có cái nhìn trực quan hơn về hiệu suất của mô hình, ta đã vẽ biểu đồ phân tán (scatter plot) so sánh giá trị thực tế và giá trị dự đoán trên tập kiểm tra (Hình \ref{fig:regression_actual_vs_predicted}).
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/regression_actual_vs_predicted.png}
+    \caption{Biểu đồ so sánh giá trị thực tế và dự đoán của mô hình hồi quy trên tập kiểm tra.}
+    \label{fig:regression_actual_vs_predicted}
+\end{figure}
+
+Đường chéo màu đỏ ($y=x$) trong biểu đồ biểu diễn một dự đoán hoàn hảo. Phân tích biểu đồ cho thấy:
+\begin{itemize}
+    \item \textbf{Xu hướng chung:} Các điểm dữ liệu có xu hướng phân bố xung quanh đường chéo, đặc biệt là trong khoảng giá phổ biến từ 15 đến 30 (nghìn USD). Điều này xác nhận mô hình có khả năng nắm bắt được mối quan hệ tuyến tính tổng thể giữa các đặc trưng và giá nhà.
+    \item \textbf{Điểm yếu của mô hình:} Biểu đồ cũng cho thấy một số hạn chế rõ rệt. Mô hình có xu hướng dự đoán kém chính xác ở các khoảng giá trị cực đoan. 
+    \begin{itemize}
+        \item Đối với các ngôi nhà có giá trị thực tế cao (trên 40), các điểm dự đoán thường nằm dưới đường chéo, cho thấy mô hình có xu hướng \textbf{dự đoán thấp hơn (underestimate)} giá trị thực.
+        \item Ngược lại, có một vài điểm dữ liệu có giá trị thực tế thấp nhưng mô hình lại dự đoán sai lệch nhiều. Có thể thấy một điểm có giá trị thực tế dưới 10 nhưng được dự đoán một giá trị gần 0 hoặc thậm chí âm, điều này là vô lý trong thực tế và là một hạn chế cố hữu của các mô hình hồi quy tuyến tính không bị chặn.
+        \item Sự phân tán của sai số dường như tăng lên khi giá nhà tăng, cho thấy mô hình hoạt động kém ổn định hơn với các bất động sản đắt tiền.
+    \end{itemize}
+\end{itemize}
+
+\section{Kết quả Mô hình Phân cụm}
+
+Phần này trình bày kết quả của việc áp dụng thuật toán phân cụm K-Means với K=3 trên toàn bộ bộ dữ liệu đã được chuẩn hóa. Mục tiêu là khám phá các nhóm tiềm ẩn trong dữ liệu một cách không giám sát. Chất lượng của các cụm được hình thành được đánh giá thông qua cả chỉ số định lượng và phân tích trực quan.
+
+\paragraph{Các chỉ số đánh giá chất lượng cụm}
+Để đánh giá mức độ đồng nhất (cohesion) và độ tách biệt (separation) của các cụm, ta đã tính toán ba chỉ số đánh giá nội tại phổ biến. Kết quả được tổng hợp trong Bảng \ref{tab:clustering_metrics}.
+
+\begin{table}[h!]
+    \centering
+    \caption{Kết quả đánh giá chất lượng Phân cụm K-Means (K=3).}
+    \label{tab:clustering_metrics}
+    \begin{tabular}{lc}
+        \toprule
+        \textbf{Chỉ số đánh giá} & \textbf{Giá trị} \\
+        \midrule
+        Silhouette Score & 0.2575 \\
+        Davies-Bouldin Index & 1.3182 \\
+        Calinski-Harabasz Index & 219.2408 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\paragraph{Phân tích và Thảo luận kết quả}
+Các chỉ số định lượng cung cấp một cái nhìn khách quan về cấu trúc của các cụm được tìm thấy:
+\begin{itemize}
+    \item \textbf{Silhouette Score:} Giá trị 0.2575 là một con số tương đối thấp, gần với 0 hơn là 1. Một điểm số gần 1 cho thấy các cụm rất dày đặc và tách biệt tốt, trong khi một điểm số gần 0 cho thấy các cụm có sự chồng chéo đáng kể hoặc các điểm nằm gần ranh giới của các cụm khác. Kết quả này ngụ ý rằng ranh giới giữa các cụm mà K-Means tìm thấy không thực sự rõ ràng.
+    \item \textbf{Davies-Bouldin Index (DBI):} Chỉ số này đo lường tỷ lệ giữa độ phân tán trong cụm và sự tách biệt giữa các cụm, với giá trị càng thấp càng tốt. Giá trị 1.3182, không gần 0, một lần nữa củng cố nhận định rằng các cụm không có độ tách biệt cao.
+    \item \textbf{Calinski-Harabasz Index (CHI):} Chỉ số này đo lường tỷ lệ giữa phương sai giữa các cụm và phương sai trong cụm, với giá trị càng cao càng tốt. Giá trị 219.24 cho thấy thuật toán đã tìm thấy một cấu trúc nhất định, nhưng không phải là một cấu trúc cực kỳ mạnh mẽ so với các bộ dữ liệu có cấu trúc cụm rõ ràng hơn.
+\end{itemize}
+
+Để có một cái nhìn trực quan, ta đã giảm chiều dữ liệu xuống còn hai thành phần chính bằng PCA và vẽ biểu đồ phân tán, tô màu các điểm theo nhãn cụm đã được gán (Hình \ref{fig:kmeans_visualization}).
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/kmeans_visualization.png}
+    \caption{Trực quan hóa kết quả phân cụm K-Means trên không gian 2D.}
+    \label{fig:kmeans_visualization}
+\end{figure}
+
+Phân tích biểu đồ trực quan (Hình \ref{fig:kmeans_visualization}) hoàn toàn tương đồng với các chỉ số định lượng:
+\begin{itemize}
+    \item \textbf{Đặc điểm các cụm:}
+    \begin{itemize}
+        \item \textbf{Cụm 1 (màu xanh ngọc):} Tập trung chủ yếu ở phía bên trái của biểu đồ (Thành phần chính 1 có giá trị âm). Đây có thể đại diện cho nhóm nhà có các đặc điểm kinh tế - xã hội tương đồng thấp.
+        \item \textbf{Cụm 2 (màu vàng):} Phân bố trải rộng ở phía bên phải và góc dưới (Thành phần chính 1 có giá trị dương), đối lập với cụm 1.
+        \item \textbf{Cụm 0 (màu tím):} Nằm xen kẽ ở khu vực trung tâm và phía trên, đóng vai trò như vùng chuyển tiếp.
+    \end{itemize}
+    \item \textbf{Sự chồng chéo:} Ranh giới giữa Cụm 0 (tím) và Cụm 1 (xanh ngọc) có sự giao thoa khá lớn. Không có khoảng trắng (gap) rõ rệt nào ngăn cách hoàn toàn ba nhóm này, cho thấy dữ liệu biến thiên liên tục.
+\end{itemize}
+
+Tóm lại, cả hai phương pháp đánh giá định lượng và định tính đều chỉ ra rằng cấu trúc cụm trong bộ dữ liệu Boston Housing khá yếu. Dữ liệu không tự nhiên phân chia thành các nhóm riêng biệt. Thay vào đó, các đặc điểm của nhà ở dường như thay đổi trên một phổ liên tục. Đây là một phát hiện quan trọng, nó cho thấy rằng việc áp dụng các mô hình học có giám sát, nơi ranh giới được "ép" phải hình thành dựa trên nhãn cho trước, có thể sẽ mang lại kết quả rõ ràng hơn so với việc cố gắng khám phá các nhóm một cách tự nhiên.
+
+
+\section{Kết quả Mô hình Phân loại}
+
+Phần này trình bày và so sánh hiệu suất của hai mô hình phân loại: K-Nearest Neighbors (KNN), và Support Vector Machine (SVM) trên tập dữ liệu kiểm tra. Hiệu suất được đánh giá thông qua một loạt các chỉ số để có được cái nhìn toàn diện về điểm mạnh và điểm yếu của từng phương pháp.
+
+\paragraph{Bảng so sánh tổng quan}
+Để có cái nhìn tổng quan, hiệu suất của các mô hình được tóm tắt trong Bảng \ref{tab:classification_summary}. Các chỉ số Precision, Recall và F1-score được lấy giá trị trung bình có trọng số (weighted average) để phản ánh đúng sự chênh lệch về số lượng mẫu giữa các lớp.
+
+\begin{table}[h!]
+    \centering
+    \caption{So sánh hiệu suất tổng quan của các mô hình phân loại.}
+    \label{tab:classification_summary}
+    \begin{tabular}{lcccc}
+        \toprule
+        \textbf{Mô hình} & \textbf{Accuracy} & \textbf{Precision (Weighted)} & \textbf{Recall (Weighted)} & \textbf{F1-score (Weighted)} \\
+        \midrule
+        SVM             & 85.29\%           & 87\%                          & 85\%                       & 85\%                         \\
+        KNN             & 82.35\%           & 83\%                          & 82\%                       & 82\%                         \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Từ bảng so sánh, có thể thấy Support Vector Machine (SVM) là mô hình hoạt động tốt nhất trong hai mô hình đã triển khai, với độ chính xác tổng thể đạt 85.29\%, theo sau là K-Nearest Neighbors (KNN) với 82.35\%.
+
+\paragraph{Phân tích chi tiết từng mô hình}
+Để hiểu sâu hơn về hành vi của từng mô hình, ta phân tích báo cáo phân loại chi tiết (classification report) cho từng lớp.
+
+\subsubsection*{Support Vector Machine (SVM) - Hiệu suất 85.29\%}
+SVM cho thấy hiệu suất tổng thể rất tốt. Báo cáo chi tiết trong Bảng \ref{tab:svm_report} cho thấy những điểm mạnh và yếu cụ thể của mô hình.
+
+\begin{table}[h!]
+    \centering
+    \caption{Báo cáo phân loại chi tiết của mô hình SVM.}
+    \label{tab:svm_report}
+    \begin{tabular}{lcccc}
+        \toprule
+        \textbf{Lớp} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-score} & \textbf{Support} \\
+        \midrule
+        Giá cao       & 1.00               & 0.72            & 0.84              & 25               \\
+        Giá thấp       & 0.83               & 0.75            & 0.79              & 20               \\
+        Giá trung bình & 0.82               & 0.95            & 0.88              & 57               \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{itemize}
+    \item \textbf{Lớp `Giá cao`:} Mô hình đạt \textbf{Precision tuyệt đối (1.00)}, có nghĩa là tất cả các dự đoán `Giá cao` của mô hình đều chính xác. Tuy nhiên, \textbf{Recall chỉ đạt 0.72}, cho thấy mô hình đã bỏ sót 28\% số nhà thực sự thuộc nhóm giá cao. Điều này cho thấy SVM rất "thận trọng" và chỉ đưa ra dự đoán `Giá cao` khi rất chắc chắn.
+    \item \textbf{Lớp `Giá trung bình`:} Đây là lớp đa số và mô hình hoạt động rất hiệu quả với \textbf{Recall rất cao (0.95)}, nghĩa là nó nhận diện được gần như toàn bộ các ngôi nhà có giá trung bình. Precision thấp hơn một chút (0.82) cho thấy đôi khi mô hình phân loại nhầm nhà từ các nhóm khác vào nhóm này.
+    \item \textbf{Lớp `Giá thấp`:} Hiệu suất ở lớp này khá cân bằng với F1-score là 0.79.
+\end{itemize}
+
+\subsubsection*{K-Nearest Neighbors (KNN) - Hiệu suất 82.35\%}
+KNN, mặc dù có độ chính xác tổng thể thấp hơn SVM một chút, vẫn là một mô hình có hiệu suất tốt. Kết quả chi tiết được trình bày trong Bảng \ref{tab:knn_report}.
+
+\begin{table}[h!]
+    \centering
+    \caption{Báo cáo phân loại chi tiết của mô hình KNN.}
+    \label{tab:knn_report}
+    \begin{tabular}{lcccc}
+        \toprule
+        \textbf{Lớp} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-score} & \textbf{Support} \\
+        \midrule
+        Giá cao       & 0.95               & 0.76            & 0.84              & 25               \\
+        Giá thấp       & 0.74               & 0.70            & 0.72              & 20               \\
+        Giá trung bình & 0.81               & 0.89            & 0.85              & 57               \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{itemize}
+    \item \textbf{Lớp `Giá cao`:} Tương tự như SVM, KNN có Precision cao (0.95) và Recall ở mức khá (0.76), cho thấy mô hình cũng có xu hướng dự đoán chính xác nhưng bỏ sót một số mẫu.
+    \item \textbf{Lớp `Giá trung bình`:} Mô hình hoạt động tốt nhất ở lớp đa số này với F1-score là 0.85.
+    \item \textbf{Lớp `Giá thấp`:} Đây là điểm yếu nhất của KNN, với cả Precision (0.74) và Recall (0.70) đều thấp hơn so với các lớp khác. Điều này cho thấy mô hình gặp khó khăn trong việc phân biệt ranh giới của nhóm giá thấp so với các nhóm lân cận.
+\end{itemize}
+
+Tóm lại, cả hai mô hình đều cho thấy hiệu quả của việc tiền xử lý dữ liệu cẩn thận, đặc biệt là việc sử dụng \texttt{ColumnTransformer}. SVM tỏ ra vượt trội hơn một chút nhờ khả năng xác định ranh giới quyết định một cách chặt chẽ, đặc biệt là với lớp `Giá cao`.
+
+\chapter{Kết luận}
+
+\section{Kết luận \& Hướng phát triển}
+
+Dự án \textbf{"Phân tích và mô hình hóa dữ liệu giá nhà tại Boston"} đã được thực hiện thành công, hoàn thành mục tiêu đề ra là xây dựng một quy trình khoa học dữ liệu toàn diện và áp dụng các kỹ thuật học máy đa dạng để giải quyết bài toán dự đoán giá nhà. Thông qua dự án, nhóm đã thể hiện được năng lực từ khâu tiền xử lý dữ liệu, phân tích khám phá, cho đến việc xây dựng, đánh giá và so sánh hiệu suất của các mô hình thuộc cả ba lĩnh vực: hồi quy, phân cụm và phân loại.
+
+\subsection*{Tóm tắt các đóng góp và kết quả chính}
+
+\begin{enumerate}
+    \item \textbf{Xây dựng quy trình làm việc hoàn chỉnh:} Dự án đã mô phỏng thành công một luồng làm việc khoa học dữ liệu tiêu chuẩn. Dữ liệu được làm sạch cẩn thận (xử lý giá trị thiếu bằng trung vị), phân tích sâu sắc qua trực quan hóa (phân phối biến, ma trận tương quan), và chuẩn bị một cách có hệ thống cho từng bài toán mô hình hóa.
+
+    \item \textbf{Áp dụng và đánh giá đa dạng mô hình:}
+    \begin{itemize}
+        \item Trong bài toán \textbf{Hồi quy}, mô hình Hồi quy Tuyến tính, sau khi được huấn luyện trên dữ liệu đã qua chuẩn hóa và giảm chiều bằng PCA, đã đạt được hiệu suất tốt với hệ số xác định $R^2$ khoảng \textbf{0.61}.
+        \item Trong bài toán \textbf{Phân loại}, các mô hình nền tảng như SVM và KNN đã được triển khai và đánh giá một cách có hệ thống, cung cấp cái nhìn so sánh về hiệu suất khi áp dụng trên cùng một bộ dữ liệu.
+        \item Trong bài toán \textbf{Phân cụm}, thuật toán K-Means đã xác định được các cụm dữ liệu có ý nghĩa, được xác thực qua các chỉ số như Silhouette Score và trực quan hóa thành công trên không gian 2 chiều.
+    \end{itemize}
+
+    \item \textbf{Triển khai kỹ thuật tiền xử lý nâng cao:} Một đóng góp quan trọng của dự án là việc áp dụng \texttt{ColumnTransformer} để xử lý riêng biệt các biến liên tục và biến rời rạc (\texttt{CHAS}). Cách tiếp cận này không chỉ chính xác hơn về mặt lý thuyết mà còn giúp bảo toàn ý nghĩa gốc của biến nhị phân, thể hiện sự hiểu biết sâu sắc về tác động của các bước tiền xử lý.
+\end{enumerate}
+
+\subsection*{Hạn chế của dự án}
+
+Mặc dù đã đạt được những kết quả tích cực, dự án vẫn còn một số hạn chế cần được nhìn nhận:
+\begin{itemize}
+    \item \textbf{Sự đơn giản của mô hình hồi quy:} Mô hình Hồi quy Tuyến tính có thể không đủ phức tạp để nắm bắt các mối quan hệ phi tuyến tiềm ẩn trong dữ liệu.
+    \item \textbf{Chưa tối ưu hóa siêu tham số:} Các mô hình hiện tại chủ yếu sử dụng các siêu tham số mặc định. Hiệu suất của các mô hình như SVM và KNN có thể được cải thiện đáng kể nếu được tinh chỉnh.
+    \item \textbf{Thiếu kỹ thuật đặc trưng:} Dự án chưa khám phá việc tạo ra các đặc trưng mới (feature engineering) từ các đặc trưng có sẵn, một kỹ thuật có thể mang lại những cải tiến đáng kể.
+\end{itemize}
+
+\subsection*{Hướng phát triển trong tương lai}
+
+Dựa trên các kết quả và hạn chế đã phân tích, nhóm đề xuất các hướng phát triển và cải tiến khả thi, phù hợp với phạm vi của một dự án học máy nhập môn:
+
+\begin{itemize}
+    \item \textbf{Triển khai các mô hình phi tuyến mạnh mẽ hơn:}
+        \begin{itemize}
+            \item Bổ sung mô hình \textbf{Random Forest} cho cả hai bài toán hồi quy (\texttt{RandomForestRegressor}) và phân loại (\texttt{RandomForestClassifier}). Đây là một mô hình ensemble mạnh mẽ, thường cho kết quả rất tốt trên dữ liệu dạng bảng và có thể nắm bắt các mối quan hệ phức tạp mà Hồi quy Tuyến tính bỏ lỡ.
+            \item Thử nghiệm các biến thể của Hồi quy Tuyến tính như \textbf{Ridge Regression} và \textbf{Lasso Regression}. Các mô hình này giúp kiểm soát hiện tượng đa cộng tuyến và có thể cải thiện sự ổn định của mô hình.
+        \end{itemize}
+
+    \item \textbf{Kỹ thuật đặc trưng cơ bản (Feature Engineering):}
+        \begin{itemize}
+            \item Phân tích từ heatmap cho thấy \texttt{LSTAT} có tương quan âm mạnh với \texttt{MEDV}. Có thể thử tạo ra một đặc trưng mới như \texttt{LSTAT} bình phương (\(LSTAT^2\)) để giúp mô hình tuyến tính nắm bắt mối quan hệ cong (phi tuyến) giữa hai biến này.
+        \end{itemize}
+
+\end{itemize}
+
+Tổng kết lại, dự án không chỉ là một bài thực hành về ứng dụng học máy mà còn là một nền tảng vững chắc cho các nghiên cứu và cải tiến sâu hơn trong tương lai, với nhiều cơ hội để nâng cao hiệu suất và đào sâu sự hiểu biết về dữ liệu.
+
+% =================================================================
+% TÀI LIỆU THAM KHẢO
+% =================================================================
+
+\addcontentsline{toc}{chapter}{Tài liệu tham khảo}
+\begin{thebibliography}{9}
+
+% --- Trích dẫn cho bộ dữ liệu Boston Housing (Nguồn) ---
+\bibitem{harrison1978}
+D. Harrison và D. L. Rubinfeld, ``Hedonic housing prices and the demand for clean air,'' \emph{Tạp chí Kinh tế và Quản lý Môi trường (Journal of Environmental Economics and Management)}, tập 5, số 1, trang 81--102, 1978. \doi{10.1016/0095-0696(78)90006-2}
+
+% --- Trích dẫn cho thư viện scikit-learn ---
+\bibitem{sklearn}
+F. Pedregosa và cộng sự, ``Scikit-learn: Machine Learning in Python,'' \emph{Tạp chí Nghiên cứu Học máy (Journal of Machine Learning Research)}, tập 12, trang 2825--2830, 2011.
+
+% --- Trích dẫn cho thư viện NumPy ---
+\bibitem{numpy}
+C. R. Harris và cộng sự, ``Array programming with NumPy,'' \emph{Tạp chí Nature}, tập 585, trang 357--362, 2020. \doi{10.1038/s41586-020-2649-2}
+
+% --- Trích dẫn cho thư viện Matplotlib ---
+\bibitem{matplotlib}
+J. D. Hunter, ``Matplotlib: A 2D Graphics Environment,'' \emph{Tạp chí Computing in Science \& Engineering}, tập 9, số 3, trang 90--95, 2007. \doi{10.1109/MCSE.2007.55}
+
+% --- Trích dẫn cho thư viện Pandas (Sách) ---
+\bibitem{pandas_book}
+W. McKinney, ``Python for Data Analysis, 2nd Edition,'' \emph{Nhà xuất bản O'Reilly Media, Inc.}, 2017.
+
+% --- Sách tham khảo chung về Machine Learning ---
+\bibitem{geron_book}
+A. Géron, ``Hands-On Machine Learning with Scikit-Learn, Keras \& TensorFlow, 2nd Edition,'' \emph{Nhà xuất bản O'Reilly Media, Inc.}, 2019.
+
+% --- Sách tham khảo bổ sung ---
+\bibitem{muller_book}
+A. C. Müller và S. Guido, ``Introduction to Machine Learning with Python,'' \emph{Nhà xuất bản O'Reilly Media, Inc.}, 2016.
+
+% --- Blog/Website tham khảo ---
+\bibitem{ml_coban}
+V. H. Tiệp, ``Machine Learning cơ bản,'' \emph{[Trực tuyến]}. Có sẵn tại: \href{https://machinelearningcoban.com/}{https://machinelearningcoban.com/}. (Truy cập ngày: 05-11-2025).
+
+\end{thebibliography}
+
+
+
+
+% Phụ lục (Tùy chọn)
+\appendix
+
+\chapter{Phụ lục}
+\label{chap:appendix}
+
+% Mục A.1: Hướng dẫn sử dụng
+\section{Hướng dẫn chạy mã nguồn (User Guide)}
+\label{sec:user_guide}
+
+\textit{(Tùy chọn – dành cho người đọc muốn tái lập quy trình chạy Notebook của dự án)}
+
+\noindent\rule{\textwidth}{0.4pt} % Đường kẻ ngang trang trí
+
+Mục này mô tả chi tiết cách thiết lập môi trường và chạy file Notebook (\texttt{.ipynb}) trên hai nền tảng: \textbf{Google Colab} và \textbf{Jupyter Notebook (Local)}.
+
+\subsection{Tệp tin cần chuẩn bị}
+
+\begin{enumerate}
+    \item \textbf{Tệp mã nguồn:} \texttt{Boston\_Housing\_Analysis.ipynb}
+    \item \textbf{Tệp dữ liệu:} \texttt{HousingData.csv}
+\end{enumerate}
+
+\subsection{Chạy mã nguồn trên Google Colab}
+
+\subsubsection*{Bước 1: Mở Notebook}
+\begin{itemize}
+    \item Truy cập Google Colab.
+    \item Chọn \textbf{File $\rightarrow$ Upload notebook} và tải lên tệp \texttt{Boston\_Housing\_Analysis.ipynb}.
+\end{itemize}
+
+\subsubsection*{Bước 2: Tải dữ liệu lên}
+\begin{itemize}
+    \item Mở tab \textbf{Files} (biểu tượng thư mục) ở thanh bên trái màn hình.
+    \item Chọn biểu tượng \textbf{Upload} và tải lên tệp \texttt{HousingData.csv}.
+    \item File sẽ được lưu tại đường dẫn gốc \texttt{/content/}.
+\end{itemize}
+
+\subsubsection*{Bước 3: Cập nhật đường dẫn dữ liệu}
+Trong cell nạp dữ liệu (Data Loading) đầu tiên, hãy đảm bảo biến đường dẫn được thiết lập như sau:
+
+\begin{verbatim}
+file_path = 'HousingData.csv'
+# hoặc '/content/HousingData.csv'
+\end{verbatim}
+
+\subsection{Chạy mã nguồn trên Jupyter Notebook (Local)}
+
+\subsubsection*{Bước 1: Cài đặt thư viện cần thiết}
+Mở Terminal hoặc Command Prompt và chạy lệnh sau:
+\begin{verbatim}
+pip install pandas numpy matplotlib seaborn scikit-learn
+\end{verbatim}
+
+\subsubsection*{Bước 2: Tổ chức thư mục}
+Đảm bảo cấu trúc thư mục của bạn trông như sau:
+\begin{verbatim}
+Project_Folder/
+|-- Boston_Housing_Analysis.ipynb
+--- HousingData.csv
+\end{verbatim}
+
+\subsubsection*{Bước 3: Mở Notebook}
+\begin{itemize}
+    \item Khởi động Jupyter Notebook hoặc Jupyter Lab.
+    \item Mở file \texttt{Boston\_Housing\_Analysis.ipynb}.
+\end{itemize}
+
+\subsubsection*{Bước 4: Kiểm tra đường dẫn dữ liệu}
+Trong code, thiết lập đường dẫn tương đối:
+\begin{verbatim}
+file_path = 'HousingData.csv'
+\end{verbatim}
+Nếu file \texttt{.csv} và Notebook nằm cùng thư mục, chương trình sẽ tự động đọc được.
+
+\subsubsection*{Bước 5: Chạy toàn bộ mã nguồn}
+Trên thanh công cụ, chọn \textbf{Cell $\rightarrow$ Run All}.
+
+\subsection{Xử lý lỗi thường gặp}
+
+\textbf{Lỗi phổ biến:}
+\begin{verbatim}
+FileNotFoundError: [Errno 2] No such file or directory: 'HousingData.csv'
+\end{verbatim}
+
+\textbf{Nguyên nhân:}
+\begin{itemize}
+    \item Chưa upload file dữ liệu (khi dùng Google Colab).
+    \item File \texttt{.csv} không nằm cùng thư mục với Notebook (khi dùng Local).
+    \item Sai đường dẫn hoặc tên file trong biến \texttt{file\_path}.
+\end{itemize}
+
+\textbf{Cách khắc phục:}
+\begin{enumerate}
+    \item Kiểm tra lại việc upload file trong tab Files của Colab.
+    \item Đảm bảo dữ liệu và Notebook nằm chung một thư mục trên máy tính.
+    \item Chỉnh lại biến \texttt{file\_path} cho đúng vị trí file.
+\end{enumerate}
+\end{document}
